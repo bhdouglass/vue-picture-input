@@ -360,24 +360,30 @@ export default {
           offsetX = (this.previewWidth - scaledWidth) / 2
         }
       }
+
       const canvas = this.$refs.previewCanvas
-      canvas.style.background = 'none'
-      canvas.width = this.previewWidth * this.pixelRatio
-      canvas.height = this.previewHeight * this.pixelRatio
-      this.context.setTransform(1, 0, 0, 1, 0, 0)
-      this.context.clearRect(0, 0, canvas.width, canvas.height)
-      if (this.rotate) {
-        this.context.translate(offsetX * this.pixelRatio, offsetY * this.pixelRatio)
-        this.context.translate(scaledWidth / 2 * this.pixelRatio, scaledHeight / 2 * this.pixelRatio)
-        this.context.rotate(this.rotate)
-        offsetX = -scaledWidth / 2
-        offsetY = -scaledHeight / 2
+      if (canvas) {
+        canvas.style.background = 'none'
+        canvas.width = this.previewWidth * this.pixelRatio
+        canvas.height = this.previewHeight * this.pixelRatio
+        this.context.setTransform(1, 0, 0, 1, 0, 0)
+        this.context.clearRect(0, 0, canvas.width, canvas.height)
       }
-      this.context.drawImage(image,
-        offsetX * this.pixelRatio,
-        offsetY * this.pixelRatio,
-        scaledWidth * this.pixelRatio,
-        scaledHeight * this.pixelRatio)
+
+      if (this.context) {
+        if (this.rotate) {
+          this.context.translate(offsetX * this.pixelRatio, offsetY * this.pixelRatio)
+          this.context.translate(scaledWidth / 2 * this.pixelRatio, scaledHeight / 2 * this.pixelRatio)
+          this.context.rotate(this.rotate)
+          offsetX = -scaledWidth / 2
+          offsetY = -scaledHeight / 2
+        }
+        this.context.drawImage(image,
+          offsetX * this.pixelRatio,
+          offsetY * this.pixelRatio,
+          scaledWidth * this.pixelRatio,
+          scaledHeight * this.pixelRatio)
+      }
     },
     selectImage () {
       this.$refs.fileInput.click()
