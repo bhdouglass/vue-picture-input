@@ -26,19 +26,19 @@
           <span v-else class="picture-inner-text" v-html="strings.tap"></span>
         </div>
       </div>
-      <button v-if="imageSelected && !hideChangeButton" @click.prevent="selectImage" :class="buttonClass">{{ strings.change }}</button>
-      <button v-if="imageSelected && removable" @click.prevent="removeImage" :class="removeButtonClass">{{ strings.remove }}</button>
-      <button v-if="imageSelected && toggleAspectRatio && width !== height" @click.prevent="rotateImage" :class="aspectButtonClass">{{ strings.aspect }}</button>
+      <button v-if="imageSelected && !hideChangeButton" @click.prevent="selectImage" :class="buttonClass" type="button">{{ strings.change }}</button>
+      <button v-if="imageSelected && removable" @click.prevent="removeImage" :class="removeButtonClass" type="button">{{ strings.remove }}</button>
+      <button v-if="imageSelected && toggleAspectRatio && width !== height" @click.prevent="rotateImage" :class="aspectButtonClass" type="button">{{ strings.aspect }}</button>
     </div>
     <div v-else>
-      <button v-if="!imageSelected" @click.prevent="selectImage" :class="buttonClass">{{ strings.select }}</button>
+      <button v-if="!imageSelected" @click.prevent="selectImage" :class="buttonClass" type="button">{{ strings.select }}</button>
       <div v-else>
         <div v-html="strings.selected"></div>
-        <button v-if="!hideChangeButton" @click.prevent="selectImage" :class="buttonClass">{{ strings.change }}</button>
-        <button v-if="removable" @click.prevent="removeImage" :class="removeButtonClass">{{ strings.remove }}</button>
+        <button v-if="!hideChangeButton" @click.prevent="selectImage" :class="buttonClass" type="button">{{ strings.change }}</button>
+        <button v-if="removable" @click.prevent="removeImage" :class="removeButtonClass" type="button">{{ strings.remove }}</button>
       </div>
     </div>
-    <input ref="fileInput" type="file" :name="name" :id="id" :accept="accept" @change="onFileChange">
+    <input ref="fileInput" type="file" :name="name" :id="id" :accept="accept" @change="onFileChange" :capture="capture" />
   </div>
 </template>
 
@@ -61,6 +61,10 @@ export default {
     accept: {
       type: String,
       default: 'image/*'
+    },
+    capture: {
+      type: String,
+      default: null
     },
     size: {
       type: [String, Number],
@@ -87,7 +91,8 @@ export default {
       default: 'btn btn-secondary button secondary'
     },
     prefill: {
-      type: [String, File],
+      // check for File API existence, do not fail with server side rendering
+      type: (typeof File === 'undefined' || typeof Blob === 'undefined') ? [String] : [String, File, Blob],
       default: ''
     },
     prefillOptions: {
@@ -529,8 +534,11 @@ export default {
       .then(imageBlob => {
         let e = { target: { files: [] } }
         const fileName = options.fileName || source.split('/').slice(-1)[0]
-        let mediaType = options.mediaType || ('image/' + (options.fileType || fileName.split('.').slice(-1)[0]))
+        let mediaType = options.mediaType || ('image/' + (options.fileType || fileName.split('.').slice(-1)[0].split('?')[0]))
         mediaType = mediaType.replace('jpg', 'jpeg')
+        if (mediaType === 'image/svg') {
+          mediaType = 'image/svg+xml'
+        }
         e.target.files[0] = new File([imageBlob], fileName, { type: mediaType })
         this.onFileChange(e, true)
       })
